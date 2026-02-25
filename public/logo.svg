@@ -1,0 +1,74 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 52" width="220" height="52">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#ff8c00"/>
+      <stop offset="100%" style="stop-color:#e04400"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.35"/>
+      <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="2" result="blur"/>
+      <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+    </filter>
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#7a2800" flood-opacity="0.4"/>
+    </filter>
+  </defs>
+
+  <!-- Pill background -->
+  <rect x="2" y="2" width="216" height="48" rx="24" fill="url(#bg)" filter="url(#shadow)"/>
+  <rect x="2" y="2" width="216" height="24" rx="12" fill="url(#shine)"/>
+  <!-- Subtle border -->
+  <rect x="2" y="2" width="216" height="48" rx="24" fill="none" stroke="rgba(255,200,80,0.5)" stroke-width="1.5"/>
+
+  <!-- Cat face icon left -->
+  <!-- Head -->
+  <circle cx="28" cy="26" r="13" fill="#ffcc88"/>
+  <!-- Ears -->
+  <polygon points="18,16 14,8 22,13" fill="#ffcc88"/>
+  <polygon points="38,16 42,8 34,13" fill="#ffcc88"/>
+  <polygon points="19,15 15.5,9 22,13" fill="#ffaaaa"/>
+  <polygon points="37,15 40.5,9 34,13" fill="#ffaaaa"/>
+  <!-- Eyes -->
+  <ellipse cx="23" cy="25" rx="3.5" ry="3.5" fill="#1a1a2e"/>
+  <ellipse cx="33" cy="25" rx="3.5" ry="3.5" fill="#1a1a2e"/>
+  <circle cx="24" cy="23.5" r="1.2" fill="white"/>
+  <circle cx="34" cy="23.5" r="1.2" fill="white"/>
+  <!-- Nose -->
+  <polygon points="26.5,28 29.5,28 28,30.5" fill="#ff9999"/>
+  <!-- Whiskers -->
+  <line x1="10" y1="26" x2="22" y2="27.5" stroke="#cccccc" stroke-width="0.8" opacity="0.8"/>
+  <line x1="10" y1="29" x2="22" y2="28.5" stroke="#cccccc" stroke-width="0.8" opacity="0.8"/>
+  <line x1="46" y1="26" x2="34" y2="27.5" stroke="#cccccc" stroke-width="0.8" opacity="0.8"/>
+  <line x1="46" y1="29" x2="34" y2="28.5" stroke="#cccccc" stroke-width="0.8" opacity="0.8"/>
+  <!-- Blush -->
+  <ellipse cx="19" cy="29" rx="4" ry="2.5" fill="#ffaaaa" opacity="0.5"/>
+  <ellipse cx="37" cy="29" rx="4" ry="2.5" fill="#ffaaaa" opacity="0.5"/>
+
+  <!-- Soccer ball mini -->
+  <circle cx="56" cy="26" r="9" fill="white" stroke="#ccc" stroke-width="0.5"/>
+  <polygon points="56,18 60,21 58.5,25.5 53.5,25.5 52,21" fill="#222" opacity="0.85"/>
+  <line x1="56" y1="18" x2="60" y2="21" stroke="#999" stroke-width="0.4"/>
+  <line x1="60" y1="21" x2="58.5" y2="25.5" stroke="#999" stroke-width="0.4"/>
+  <line x1="58.5" y1="25.5" x2="53.5" y2="25.5" stroke="#999" stroke-width="0.4"/>
+  <line x1="53.5" y1="25.5" x2="52" y2="21" stroke="#999" stroke-width="0.4"/>
+  <line x1="52" y1="21" x2="56" y2="18" stroke="#999" stroke-width="0.4"/>
+
+  <!-- Text: SPORTS DROP -->
+  <text x="74" y="21" font-family="'Fredoka One', 'Arial Rounded MT Bold', Arial" font-size="15" font-weight="bold" fill="white" letter-spacing="1.5" filter="url(#shadow)">SPORTS DROP</text>
+  <!-- Tagline -->
+  <text x="75" y="36" font-family="Nunito, Arial" font-size="10" font-weight="700" fill="rgba(255,240,200,0.9)" letter-spacing="0.8">MEOW MERGER 🐱</text>
+
+  <!-- Animated drop ball -->
+  <circle cx="203" cy="26" r="8" fill="#c8e030" opacity="0.9" filter="url(#glow)">
+    <animate attributeName="cy" values="18;26;18" dur="1.8s" repeatCount="indefinite" calcMode="ease-in-out"/>
+    <animate attributeName="r" values="8;7;8" dur="1.8s" repeatCount="indefinite"/>
+  </circle>
+  <!-- ball markings -->
+  <line x1="199" y1="26" x2="207" y2="26" stroke="white" stroke-width="1" opacity="0.7">
+    <animate attributeName="y1" values="18;26;18" dur="1.8s" repeatCount="indefinite" calcMode="ease-in-out"/>
+    <animate attributeName="y2" values="18;26;18" dur="1.8s" repeatCount="indefinite" calcMode="ease-in-out"/>
+  </line>
+</svg>

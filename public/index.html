@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<title>Sports Drop - Meow Merger</title>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@700;800&display=swap" rel="stylesheet"/>
+<script src="/phaser.min.js"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;min-height:100%;font-family:"Nunito",sans-serif;
+  background:radial-gradient(ellipse at 35% 20%,#eaaa6a,#c47840 45%,#9a5020);
+  display:flex;flex-direction:column;align-items:center;overflow-x:hidden;}
+#nav{width:100%;background:linear-gradient(135deg,#b04b08,#732a03);
+  border-bottom:2px solid rgba(255,175,55,.28);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 18px;box-shadow:0 3px 14px rgba(100,40,0,.4);}
+#nav-logo{font-family:"Fredoka One",sans-serif;font-size:20px;color:#ff8c00;text-decoration:none;}
+#nav-links{display:flex;gap:12px;align-items:center;}
+#nav-links a{font-size:12px;font-weight:800;color:rgba(255,228,175,.78);text-decoration:none;}
+.nk{background:linear-gradient(135deg,#ff5e5b,#e01818)!important;color:white!important;
+  padding:6px 14px;border-radius:50px;}
+#layout{display:grid;grid-template-columns:185px minmax(0,1fr) 185px;
+  gap:0 10px;width:min(900px,100vw);padding:10px;align-items:start;}
+#left{display:flex;flex-direction:column;align-items:center;gap:10px;}
+.bubble{border-radius:50%;
+  background:radial-gradient(circle at 36% 28%,rgba(255,252,220,.9),rgba(245,185,70,.72) 58%,rgba(210,140,20,.5));
+  border:3px solid rgba(255,215,90,.85);
+  box-shadow:0 8px 28px rgba(100,50,10,.3),inset 0 5px 10px rgba(255,255,255,.5);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;}
+.bubble::after{content:"";position:absolute;top:13px;left:20px;width:36px;height:16px;
+  background:rgba(255,255,255,.45);border-radius:50%;transform:rotate(-28deg);}
+.score-bub{width:155px;height:155px;}
+.score-bub .lbl{font-family:"Fredoka One",sans-serif;font-size:15px;color:#a85c2a;}
+.score-bub .val{font-family:"Fredoka One",sans-serif;font-size:44px;color:#b04400;line-height:1;}
+.score-bub .bst{font-size:9px;font-weight:800;color:rgba(140,60,0,.7);text-align:center;line-height:1.4;}
+.lb-panel{width:182px;background:rgba(255,220,140,.93);border:2px solid rgba(240,170,60,.9);
+  border-radius:14px;overflow:hidden;}
+.lb-head{background:linear-gradient(135deg,#f0c840,#e09020);padding:7px 10px;text-align:center;
+  font-family:"Fredoka One",sans-serif;font-size:13px;color:#a85c2a;border-bottom:2px solid rgba(240,170,60,.9);}
+.lb-row{display:flex;align-items:center;gap:6px;padding:5px 8px;border-bottom:1px solid rgba(190,120,40,.18);}
+.lb-row:last-child{border-bottom:none;}
+.lb-m{font-size:14px;width:20px;text-align:center;}
+.lb-n{flex:1;font-size:11px;font-weight:800;color:#7a3a10;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lb-p{font-size:12px;font-weight:900;color:#b04400;}
+.lb-now{background:rgba(245,180,50,.22);padding:5px 8px;
+  display:flex;justify-content:space-between;font-size:11px;font-weight:800;color:#a85c2a;}
+.kofi-btn{display:flex;align-items:center;justify-content:center;gap:5px;
+  width:182px;padding:8px;border-radius:12px;font-family:"Fredoka One",sans-serif;font-size:13px;
+  background:linear-gradient(135deg,#ff5e5b,#e01818);color:white;text-decoration:none;}
+#center{display:flex;flex-direction:column;align-items:center;position:relative;}
+#game-wrap{width:320px;height:530px;position:relative;
+  background:rgba(255,255,255,.12);
+  border:3px solid rgba(255,255,255,.58);border-top:3px solid rgba(255,255,255,.78);
+  border-radius:4px 4px 14px 14px;
+  box-shadow:inset 5px 0 14px rgba(255,255,255,.14),inset -5px 0 14px rgba(255,255,255,.14),
+    0 10px 44px rgba(80,30,0,.38);}
+#gc{position:absolute;inset:0;}
+#gc canvas{display:block;width:100%!important;height:100%!important;}
+#ss{position:absolute;top:0;left:0;width:320px;height:530px;
+  border-radius:4px 4px 14px 14px;
+  background:linear-gradient(170deg,#1c0800,#3d1500 50%,#5c2800);
+  z-index:999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;
+  overflow:hidden;transition:opacity .4s,transform .4s;}
+#ss.out{opacity:0;transform:scale(1.04);pointer-events:none;}
+.fb{position:absolute;opacity:.14;pointer-events:none;animation:fbf 5s ease-in-out infinite;}
+@keyframes fbf{0%,100%{transform:translateY(0);}40%{transform:translateY(-16px);}70%{transform:translateY(8px);}}
+.sc-cat{font-size:54px;animation:bob 1.3s ease-in-out infinite;}
+@keyframes bob{0%,100%{transform:translateY(0);}45%{transform:translateY(-12px);}62%{transform:translateY(2px);}}
+.sc-title{font-family:"Fredoka One",sans-serif;font-size:30px;color:#ff8c00;
+  letter-spacing:2px;text-shadow:0 0 28px rgba(255,140,0,.65),0 3px 0 #000;}
+.sc-sub{font-family:"Nunito",sans-serif;font-size:12px;font-weight:800;
+  color:rgba(255,210,130,.6);letter-spacing:3px;margin-bottom:5px;}
+.sc-how{background:rgba(255,255,255,.06);border:1px solid rgba(255,170,50,.15);
+  border-radius:10px;padding:8px 14px;width:88%;margin-bottom:6px;}
+.sc-how-r{font-size:12px;font-weight:700;color:rgba(255,225,170,.8);padding:2px 0;}
+.sc-best{font-family:"Fredoka One",sans-serif;font-size:14px;color:rgba(255,205,70,.9);margin-bottom:8px;}
+#start-btn{display:flex;align-items:center;gap:10px;
+  background:linear-gradient(135deg,#ff8c00,#e03c00);
+  border:none;border-radius:50px;cursor:pointer;padding:13px 36px;
+  box-shadow:0 5px 0 #7a1800;margin-bottom:5px;
+  animation:bp 2s ease-in-out infinite;}
+@keyframes bp{0%,100%{box-shadow:0 5px 0 #7a1800,0 8px 22px rgba(255,90,0,.4);}
+  50%{box-shadow:0 5px 0 #7a1800,0 8px 36px rgba(255,160,0,.75);}}
+#start-btn:hover{transform:translateY(-2px);}
+#start-btn:active{transform:translateY(2px);}
+.btn-a{font-size:20px;color:white;}
+.btn-l{font-family:"Fredoka One",sans-serif;font-size:20px;color:white;letter-spacing:1.5px;}
+.sc-tip{font-size:10px;color:rgba(255,190,80,.35);font-weight:700;}
+#right{display:flex;flex-direction:column;align-items:center;gap:14px;}
+.next-bub{width:145px;height:145px;}
+.next-bub .nl{font-family:"Fredoka One",sans-serif;font-size:14px;color:#a85c2a;margin-bottom:3px;}
+.evo-panel{width:178px;background:rgba(255,220,140,.93);border:2px solid rgba(240,170,60,.9);border-radius:14px;padding:10px;}
+.evo-t{font-family:"Fredoka One",sans-serif;font-size:13px;color:#a85c2a;text-align:center;margin-bottom:8px;}
+#evo{position:relative;width:130px;height:130px;margin:0 auto;}
+.ei{position:absolute;display:flex;align-items:center;justify-content:center;}
+.spop{position:fixed;pointer-events:none;z-index:9999;
+  font-family:"Fredoka One",sans-serif;font-size:20px;color:#e05000;
+  text-shadow:0 2px 0 rgba(255,255,255,.8);animation:sp .85s ease-out forwards;}
+@keyframes sp{0%{opacity:1;transform:translateY(0);}100%{opacity:0;transform:translateY(-55px);}}
+#ov{display:none;position:fixed;inset:0;z-index:1000;
+  background:rgba(100,45,5,.65);backdrop-filter:blur(8px);
+  align-items:center;justify-content:center;padding:16px;}
+#ov.open{display:flex;}
+#mo{width:min(390px,95vw);background:linear-gradient(160deg,#fef0c5,#fdce78);
+  border:3px solid #f0a020;border-radius:22px;overflow:hidden;}
+.mt{background:linear-gradient(135deg,#f5cc55,#e88020);padding:18px 24px;text-align:center;border-bottom:2px solid rgba(190,110,20,.3);}
+.mt .me{font-size:44px;display:block;}
+.mt h2{font-family:"Fredoka One",sans-serif;font-size:26px;color:#7a2400;}
+.mt .ms{color:rgba(90,40,0,.6);font-size:12px;}
+.mt .mv{font-family:"Fredoka One",sans-serif;font-size:50px;color:#b03500;line-height:1;}
+.msv{padding:12px 20px;border-bottom:2px solid rgba(190,110,20,.25);}
+.msv label{display:block;font-size:10px;font-weight:900;color:#a85c2a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+.sr{display:flex;gap:8px;}
+#pn{flex:1;padding:8px 12px;border-radius:10px;font-size:14px;font-weight:700;
+  background:rgba(255,255,255,.7);border:2px solid rgba(190,120,30,.4);color:#7a2400;outline:none;}
+#svb{padding:8px 16px;border-radius:10px;font-family:"Fredoka One",sans-serif;font-size:14px;
+  background:linear-gradient(135deg,#ff8800,#e04800);color:white;border:none;cursor:pointer;}
+#svb:disabled{opacity:.4;}
+#svm{padding:8px 20px;text-align:center;color:#1a6e38;font-weight:900;font-size:13px;border-bottom:2px solid rgba(190,110,20,.25);}
+.mbd{padding:12px 20px;}
+.mbd label{display:block;font-size:10px;font-weight:900;color:#a85c2a;text-transform:uppercase;letter-spacing:.1em;margin-bottom:7px;}
+#bl{max-height:140px;overflow-y:auto;display:flex;flex-direction:column;gap:3px;}
+.br{display:flex;align-items:center;gap:8px;padding:5px 9px;border-radius:9px;background:rgba(255,255,255,.38);}
+.br-r{font-size:13px;width:20px;text-align:center;}
+.br-n{flex:1;font-size:12px;font-weight:700;color:#7a2400;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.br-s{font-size:12px;font-weight:900;color:#b03500;}
+.mact{display:flex;flex-direction:column;gap:8px;padding:10px 20px 16px;}
+#shb{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:12px;
+  font-family:"Fredoka One",sans-serif;font-size:14px;
+  background:linear-gradient(135deg,#1d9bf0,#0d6efd);color:white;border:none;cursor:pointer;}
+#mkofi{display:flex;align-items:center;justify-content:center;gap:6px;padding:11px;border-radius:12px;
+  text-decoration:none;font-family:"Fredoka One",sans-serif;font-size:14px;
+  background:linear-gradient(135deg,#ff5e5b,#e01818);color:white;}
+#pa{padding:14px;border-radius:12px;font-family:"Fredoka One",sans-serif;font-size:16px;
+  background:linear-gradient(135deg,#ff8800,#e04800);color:white;border:none;cursor:pointer;}
+#ck{position:fixed;bottom:0;left:0;right:0;z-index:9000;
+  background:rgba(18,8,0,.96);border-top:2px solid rgba(240,160,40,.3);
+  padding:14px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;
+  transform:translateY(100%);transition:transform .4s cubic-bezier(.34,1.56,.64,1);}
+#ck.show{transform:translateY(0);}
+#ck p{flex:1;font-size:13px;color:rgba(255,232,188,.83);}
+#ck a{color:#f5a623;font-weight:700;text-decoration:none;}
+.ck-btns{display:flex;gap:9px;}
+#cka{background:linear-gradient(135deg,#ff8800,#e04800);color:white;border:none;
+  border-radius:50px;padding:9px 20px;cursor:pointer;font-family:"Fredoka One",sans-serif;font-size:14px;}
+#ckd{background:transparent;color:rgba(255,228,175,.58);border:1.5px solid rgba(255,200,80,.28);
+  border-radius:50px;padding:8px 16px;cursor:pointer;font-size:13px;font-weight:700;}
+#ft{width:100%;max-width:900px;display:flex;align-items:center;justify-content:center;
+  flex-wrap:wrap;gap:6px 18px;padding:14px 18px;margin-top:8px;border-top:1px solid rgba(255,200,100,.15);}
+#ft a{font-size:11px;font-weight:700;color:rgba(255,232,188,.6);text-decoration:none;}
+#ft .sep{color:rgba(255,200,100,.2);font-size:10px;}
+#ft .copy{font-size:11px;color:rgba(255,200,100,.32);font-weight:600;}
+@media(max-width:640px){
+  #layout{grid-template-columns:1fr;}
+  #left,#right{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:8px;}
+  #game-wrap,#ss{width:min(320px,96vw);height:min(530px,80vw);}
+  .score-bub,.next-bub{width:130px;height:130px;}
+  .lb-panel,.evo-panel,.kofi-btn{width:155px;}
+  .hm{display:none;}
+}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <a id="nav-logo" href="/">&#x1F431; Sports Drop</a>
+  <div id="nav-links">
+    <a href="/privacy.html" class="hm">Privacy</a>
+    <a href="/terms.html" class="hm">Terms</a>
+    <a href="https://ko-fi.com/YOUR_KOFI_USERNAME" target="_blank" rel="noopener" class="nk">&#x2615; Support</a>
+  </div>
+</nav>
+<div id="layout">
+  <div id="left">
+    <div class="bubble score-bub">
+      <div class="lbl">SCORE</div>
+      <div class="val" id="sc">0</div>
+      <div class="bst">BEST<br><span id="bs">0</span></div>
+    </div>
+    <div class="lb-panel">
+      <div class="lb-head">&#x1F3C6; LEADERBOARD</div>
+      <div id="lbr">
+        <div class="lb-row"><span class="lb-m">&#x1F947;</span><span class="lb-n">---</span><span class="lb-p">-</span></div>
+        <div class="lb-row"><span class="lb-m">&#x1F948;</span><span class="lb-n">---</span><span class="lb-p">-</span></div>
+        <div class="lb-row"><span class="lb-m">&#x1F949;</span><span class="lb-n">---</span><span class="lb-p">-</span></div>
+      </div>
+      <div class="lb-now"><span>NOW</span><span id="lbn">0</span></div>
+    </div>
+    <a href="https://ko-fi.com/YOUR_KOFI_USERNAME" target="_blank" rel="noopener" class="kofi-btn">&#x2615; Buy me a coffee</a>
+  </div>
+  <div id="center">
+    <div id="ss">
+      <span class="fb" style="font-size:28px;left:7%;top:12%">&#x26BD;</span>
+      <span class="fb" style="font-size:22px;right:9%;top:19%;animation-delay:.9s">&#x1F3C0;</span>
+      <span class="fb" style="font-size:18px;left:15%;bottom:24%;animation-delay:1.8s">&#x1F3BE;</span>
+      <span class="fb" style="font-size:32px;right:7%;bottom:30%;animation-delay:.4s">&#x26BE;</span>
+      <span class="fb" style="font-size:16px;left:45%;top:8%;animation-delay:1.3s">&#x1F3D0;</span>
+      <span class="fb" style="font-size:24px;left:25%;bottom:11%;animation-delay:2.2s">&#x1F3C8;</span>
+      <div class="sc-cat">&#x1F431;</div>
+      <div class="sc-title">SPORTS DROP</div>
+      <div class="sc-sub">MEOW MERGER</div>
+      <div class="sc-how">
+        <div class="sc-how-r">&#x1F5B1; Move mouse left and right to aim</div>
+        <div class="sc-how-r">&#x1F5B1; Click inside the box to drop ball</div>
+        <div class="sc-how-r">&#x26BD; Same balls touching = they merge!</div>
+        <div class="sc-how-r">&#x26A0; Don't let balls go above the red line!</div>
+      </div>
+      <div class="sc-best">&#x1F3C6; Best Score: <span id="ssb">0</span></div>
+      <button id="start-btn">
+        <span class="btn-a">&#x25B6;</span>
+        <span class="btn-l">START GAME</span>
+      </button>
+      <div class="sc-tip">Drop &bull; Merge &bull; Score Big!</div>
+    </div>
+    <div id="game-wrap">
+      <div id="gc"></div>
+    </div>
+  </div>
+  <div id="right">
+    <div class="bubble next-bub">
+      <div class="nl">NEXT</div>
+      <canvas id="nc" width="68" height="68"></canvas>
+    </div>
+    <div class="evo-panel">
+      <div class="evo-t">&#x26A1; Evolution</div>
+      <div id="evo"></div>
+    </div>
+  </div>
+</div>
+<div id="ov">
+  <div id="mo">
+    <div class="mt">
+      <span class="me">&#x1F63F;</span>
+      <h2>GAME OVER!</h2>
+      <div class="ms">Final Score</div>
+      <div class="mv" id="msc">0</div>
+    </div>
+    <div class="msv" id="svs">
+      <label>Save to Leaderboard</label>
+      <div class="sr">
+        <input id="pn" placeholder="Your name..." maxlength="18" autocomplete="off"/>
+        <button id="svb">Save</button>
+      </div>
+    </div>
+    <div id="svm" style="display:none">&#x2713; Score saved!</div>
+    <div class="mbd">
+      <label>Top Scores</label>
+      <div id="bl"><div style="text-align:center;padding:12px;color:#a06030;font-size:13px">Loading...</div></div>
+    </div>
+    <div class="mact">
+      <button id="shb">&#x1F426; Share your score</button>
+      <a id="mkofi" href="https://ko-fi.com/YOUR_KOFI_USERNAME" target="_blank" rel="noopener">&#x2615; Buy me a coffee!</a>
+      <button id="pa">&#x26BD; PLAY AGAIN</button>
+    </div>
+  </div>
+</div>
+<div id="ck">
+  <p>&#x1F36A; We use cookies for ads and to save your best score. <a href="/privacy.html">Privacy Policy</a></p>
+  <div class="ck-btns">
+    <button id="ckd">Essential only</button>
+    <button id="cka">Accept &#x2713;</button>
+  </div>
+</div>
+<footer id="ft">
+  <a href="/privacy.html">&#x1F512; Privacy Policy</a><span class="sep">&bull;</span>
+  <a href="/terms.html">&#x1F4CB; Terms</a><span class="sep">&bull;</span>
+  <a href="https://ko-fi.com/YOUR_KOFI_USERNAME" target="_blank" rel="noopener">&#x2615; Support</a><span class="sep">&bull;</span>
+  <span class="copy">&copy; 2026 Sports Drop Meow Merger</span>
+</footer>
+<script>
+var BALLS=[
+  {r:15,pts:1, n:"Ping Pong", e:"P"},
+  {r:21,pts:3, n:"Golf Ball", e:"G"},
+  {r:27,pts:6, n:"Tennis",    e:"T"},
+  {r:33,pts:10,n:"Baseball",  e:"B"},
+  {r:40,pts:15,n:"Volleyball",e:"V"},
+  {r:48,pts:21,n:"Soccer",    e:"S"},
+  {r:56,pts:28,n:"Basketball",e:"K"},
+  {r:64,pts:36,n:"Football",  e:"F"},
+  {r:73,pts:45,n:"Rugby",     e:"R"},
+  {r:83,pts:55,n:"Bowling",   e:"W"},
+  {r:94,pts:66,n:"Globe",     e:"L"}
+];
+var COLORS=[0xffffff,0xf5f5f5,0xc8e030,0xfff8f0,0xfff2d8,0xfefefe,0xdd6010,0x993311,0xbb6618,0x4422bb,0x1a66dd];
+var GW=320,GH=530,WALL=18,DY=65,OY=92,MAX=4;
+var score=0,best=+(localStorage.getItem("sd_b")||0),nxtLvl=0,pg=null,fs=0,SU="",SK="";
+
+document.getElementById("bs").textContent=best.toLocaleString();
+document.getElementById("ssb").textContent=best.toLocaleString();
+
+function setScore(s){
+  score=s;
+  document.getElementById("sc").textContent=s.toLocaleString();
+  document.getElementById("lbn").textContent=s.toLocaleString();
+  if(s>best){best=s;localStorage.setItem("sd_b",s);document.getElementById("bs").textContent=s.toLocaleString();}
+}
+function drawNext(lvl){
+  var c=document.getElementById("nc"),x=c.getContext("2d");
+  x.clearRect(0,0,68,68);
+  x.fillStyle="#"+COLORS[lvl].toString(16).padStart(6,"0");
+  x.beginPath();x.arc(34,28,Math.min(24,BALLS[lvl].r*.7),0,Math.PI*2);x.fill();
+  x.fillStyle="rgba(0,0,0,.7)";x.font="bold 12px Nunito,sans-serif";
+  x.textAlign="center";x.textBaseline="middle";x.fillText(BALLS[lvl].n,34,56);
+}
+(function(){
+  var ring=document.getElementById("evo");
+  BALLS.forEach(function(b,i){
+    var a=(i/BALLS.length)*Math.PI*2-Math.PI/2;
+    var sz=Math.max(14,Math.min(24,b.r*.32));
+    var el=document.createElement("div");el.className="ei";
+    var col="#"+COLORS[i].toString(16).padStart(6,"0");
+    el.style.cssText="left:"+(65+50*Math.cos(a)-sz/2)+"px;top:"+(65+50*Math.sin(a)-sz/2)+"px;width:"+sz+"px;height:"+sz+"px;background:"+col+";border-radius:50%;border:2px solid rgba(0,0,0,.2);title:"+b.n;
+    ring.appendChild(el);
+  });
+})();
+function scorePop(gx,gy,txt){
+  var cvs=document.querySelector("#gc canvas");if(!cvs)return;
+  var rc=cvs.getBoundingClientRect();
+  var el=document.createElement("div");el.className="spop";el.textContent=txt;
+  el.style.left=(rc.left+gx*(rc.width/GW)-18)+"px";
+  el.style.top=(rc.top+gy*(rc.height/GH)-8)+"px";
+  document.body.appendChild(el);setTimeout(function(){el.remove();},900);
+}
+async function loadCfg(){
+  try{var r=await fetch("/api/config");var c=await r.json();SU=c.supabaseUrl;SK=c.supabaseKey;}catch(e){}
+}
+async function fetchLB(){
+  if(!SU)return[];
+  try{var r=await fetch(SU+"/rest/v1/leaderboard?order=score.desc&limit=10",
+    {headers:{apikey:SK,Authorization:"Bearer "+SK}});
+    return r.ok?r.json():[];}catch{return[];}
+}
+async function postScore(name,s){
+  if(!SU)return false;
+  try{var r=await fetch(SU+"/rest/v1/leaderboard",{method:"POST",
+    headers:{apikey:SK,Authorization:"Bearer "+SK,"Content-Type":"application/json",Prefer:"return=minimal"},
+    body:JSON.stringify({name:name,score:s})});return r.ok;}catch{return false;}
+}
+function esc(s){return s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
+async function renderLB(){
+  var el=document.getElementById("bl");
+  var d=await fetchLB();
+  var med=["1st","2nd","3rd","4th","5th","6th","7th","8th","9th","10th"];
+  if(!d.length){el.innerHTML='<div style="text-align:center;padding:12px;color:#a06030;font-size:12px">No scores yet!</div>';return;}
+  el.innerHTML=d.map(function(r,i){return'<div class="br"><span class="br-r">'+med[i]+'</span><span class="br-n">'+esc(r.name)+'</span><span class="br-s">'+r.score.toLocaleString()+'</span></div>';}).join("");
+  document.getElementById("lbr").innerHTML=d.slice(0,3).map(function(r,i){
+    var medals=["#1","#2","#3"];
+    return'<div class="lb-row"><span class="lb-m">'+medals[i]+'</span><span class="lb-n">'+esc(r.name)+'</span><span class="lb-p">'+r.score.toLocaleString()+'</span></div>';
+  }).join("");
+}
+
+// PHASER SCENE
+var GameScene=new Phaser.Class({
+  Extends:Phaser.Scene,
+  initialize:function(){Phaser.Scene.call(this,{key:"G"});},
+  preload:function(){
+    var self=this;
+    BALLS.forEach(function(b,i){
+      var k="b"+i;if(self.textures.exists(k))return;
+      var pad=8,sz=(b.r+pad)*2;
+      var g=self.make.graphics({add:false});
+      // Shadow
+      g.fillStyle(0x000000,.2);g.fillCircle(b.r+pad+2,b.r+pad+4,b.r);
+      // Ball
+      g.fillStyle(COLORS[i],1);g.fillCircle(b.r+pad,b.r+pad,b.r);
+      // Lines for some balls
+      if(i===5){// Soccer - dark spots
+        [[0,0],[b.r*.6,0],[b.r*.3,b.r*.52],[b.r*.3,-b.r*.52],[-b.r*.3,b.r*.52],[-b.r*.3,-b.r*.52],[-b.r*.6,0]].forEach(function(d){
+          g.fillStyle(0x111111,1);g.fillCircle(b.r+pad+d[0],b.r+pad+d[1],b.r*.19);
+        });
+      }else if(i===6){// Basketball - lines
+        g.lineStyle(2,0x882200,1);g.lineBetween(pad,b.r+pad,b.r*2+pad,b.r+pad);
+        g.beginPath();g.arc(b.r+pad,b.r+pad,b.r,-Math.PI,0,false,32);g.strokePath();
+      }else if(i===2){// Tennis - curves
+        g.lineStyle(2,0xfafafa,.9);
+        g.beginPath();g.arc(b.r+pad,b.r+pad,b.r*.6,-.7,.7,false,32);g.strokePath();
+        g.beginPath();g.arc(b.r+pad,b.r+pad,b.r*.6,Math.PI-.7,Math.PI+.7,false,32);g.strokePath();
+      }
+      // Highlight
+      g.fillStyle(0xffffff,.3);g.fillCircle(b.r+pad-b.r*.28,b.r+pad-b.r*.28,b.r*.18);
+      // Border
+      g.lineStyle(1.5,0x000000,.15);g.strokeCircle(b.r+pad,b.r+pad,b.r);
+      g.generateTexture(k,sz,sz);g.destroy();
+    });
+    // Cat (simple)
+    if(!this.textures.exists("cat")){
+      var g=this.make.graphics({add:false});
+      // Body/head
+      g.fillStyle(0xffcc88,1);g.fillCircle(30,22,18);g.fillEllipse(30,42,44,28);
+      // Ears
+      g.fillTriangle(14,10,10,1,22,8);g.fillTriangle(46,10,50,1,38,8);
+      g.fillStyle(0xffaaaa,1);g.fillTriangle(15,9,12,3,21,8);g.fillTriangle(45,9,48,3,39,8);
+      // Eyes
+      g.fillStyle(0x222222,1);g.fillCircle(22,21,4);g.fillCircle(38,21,4);
+      g.fillStyle(0xffffff,1);g.fillCircle(23,20,1.5);g.fillCircle(39,20,1.5);
+      // Nose + mouth
+      g.fillStyle(0xff9999,1);g.fillTriangle(27,26,33,26,30,29);
+      g.lineStyle(1,0x886644,1);g.lineBetween(30,29,28,32);g.lineBetween(30,29,32,32);
+      // Whiskers
+      g.lineStyle(1,0xaaaaaa,.7);
+      g.lineBetween(5,23,20,25);g.lineBetween(5,27,20,26);
+      g.lineBetween(55,23,40,25);g.lineBetween(55,27,40,26);
+      // Blush
+      g.fillStyle(0xffaaaa,.4);g.fillCircle(16,28,4);g.fillCircle(44,28,4);
+      g.generateTexture("cat",60,68);g.destroy();
+    }
+  },
+  create:function(){
+    this.over=false;this.ok=true;this.balls=[];this.mq=[];this.ptr={x:GW/2};
+    this.dl=Phaser.Math.Between(0,MAX);nxtLvl=Phaser.Math.Between(0,MAX);
+    setScore(0);drawNext(nxtLvl);
+    // BG dots
+    var dots=this.add.graphics();dots.fillStyle(0xffffff,.05);
+    for(var xi=22;xi<GW;xi+=26)for(var yi=OY+8;yi<GH;yi+=26)dots.fillCircle(xi,yi,1.2);
+    // Danger line
+    var dl=this.add.graphics();dl.lineStyle(2,0xff3300,.55);
+    for(var xi=WALL;xi<GW-WALL;xi+=10)dl.lineBetween(xi,OY,Math.min(xi+6,GW-WALL),OY);
+    this.add.text(GW-WALL-2,OY-11,"! DANGER",{fontSize:"9px",color:"#ff3300",fontStyle:"bold"}).setOrigin(1,0).setAlpha(.7);
+    // Guide line
+    this.guide=this.add.graphics().setDepth(5);
+    // Physics
+    this.matter.world.setBounds(0,0,GW,GH,WALL);
+    this.matter.world.setGravity(0,2.2);
+    this.matter.add.rectangle(GW/2,GH+WALL/2,GW,WALL,{isStatic:true});
+    // Cat
+    this.cat=this.add.image(GW/2,DY-26,"cat").setDepth(16).setScale(.9);
+    this._showDrop();
+    this.ct=this.tweens.add({targets:this.cat,y:DY-23,duration:600,yoyo:true,repeat:-1,ease:"Sine.easeInOut"});
+    // Input
+    var self=this;
+    this.input.on("pointermove",function(p){
+      var r=BALLS[self.dl].r;
+      self.ptr.x=Phaser.Math.Clamp(p.x,WALL+r+2,GW-WALL-r-2);
+    });
+    this.input.on("pointerdown",function(){
+      if(self.ok&&!self.over)self._drop();
+    });
+    this.matter.world.on("collisionstart",function(e){
+      if(!self.over)e.pairs.forEach(function(p){self._tryMerge(p.bodyA,p.bodyB);});
+    });
+  },
+  _showDrop:function(){
+    if(this.di)this.di.destroy();
+    var r=BALLS[this.dl].r;
+    this.di=this.add.image(this.ptr.x,DY+r+2,"b"+this.dl).setDepth(15).setAlpha(.88);
+  },
+  _drop:function(){
+    this.ok=false;
+    var x=this.ptr.x,lvl=this.dl,r=BALLS[lvl].r;
+    this.tweens.add({targets:this.cat,scaleX:1.1,scaleY:.85,duration:70,yoyo:true});
+    var body=this.matter.add.image(x,DY+r+2,"b"+lvl,null,{
+      shape:{type:"circle",radius:r},restitution:.22,friction:.5,frictionAir:.011,density:.003
+    });
+    body.setCircle(r);
+    var e={go:body,lvl:lvl,merged:false,settling:false};
+    this.balls.push(e);
+    var self=this;
+    this.time.delayedCall(900,function(){e.settling=true;self._chk();});
+    this.dl=nxtLvl;nxtLvl=Phaser.Math.Between(0,MAX);
+    this._showDrop();drawNext(nxtLvl);
+    this.time.delayedCall(380,function(){self.ok=true;});
+  },
+  _tryMerge:function(a,b){
+    var ea=null,eb=null;
+    for(var i=0;i<this.balls.length;i++){
+      if(this.balls[i].go&&this.balls[i].go.body&&this.balls[i].go.body.id===a.id)ea=this.balls[i];
+      if(this.balls[i].go&&this.balls[i].go.body&&this.balls[i].go.body.id===b.id)eb=this.balls[i];
+    }
+    if(!ea||!eb||ea.merged||eb.merged)return;
+    if(ea.lvl!==eb.lvl||ea.lvl>=BALLS.length-1)return;
+    this.mq.push([ea,eb]);
+  },
+  _processMerges:function(){
+    while(this.mq.length){
+      var pair=this.mq.shift(),ea=pair[0],eb=pair[1];
+      if(ea.merged||eb.merged)continue;
+      ea.merged=eb.merged=true;
+      var mx=(ea.go.x+eb.go.x)/2,my=(ea.go.y+eb.go.y)/2;
+      var nl=ea.lvl+1,nb=BALLS[nl];
+      this._burst(mx,my);
+      ea.go.destroy();eb.go.destroy();
+      this.balls=this.balls.filter(function(x){return x!==ea&&x!==eb;});
+      var ng=this.matter.add.image(mx,my,"b"+nl,null,{
+        shape:{type:"circle",radius:nb.r},restitution:.22,friction:.5,frictionAir:.011,density:.003
+      });
+      ng.setCircle(nb.r);
+      this.matter.body.applyForce(ng.body,ng.body.position,{x:0,y:-.045});
+      var ne={go:ng,lvl:nl,merged:false,settling:false};
+      this.balls.push(ne);
+      var self=this;
+      this.time.delayedCall(600,function(){ne.settling=true;});
+      score+=nb.pts;setScore(score);scorePop(mx,my,"+"+nb.pts);
+    }
+  },
+  _burst:function(x,y){
+    var self=this;
+    for(var i=0;i<6;i++){
+      var a=(i/6)*Math.PI*2,d=18+Math.random()*20;
+      var g=self.add.graphics().setDepth(22);
+      g.fillStyle(0xffdd00,1);g.fillCircle(x,y,4);
+      self.tweens.add({targets:g,x:Math.cos(a)*d,y:Math.sin(a)*d,alpha:0,scaleX:.1,scaleY:.1,
+        duration:300+Math.random()*120,onComplete:function(){g.destroy();}});
+    }
+  },
+  _chk:function(){
+    if(this.over)return;
+    for(var i=0;i<this.balls.length;i++){
+      var e=this.balls[i];
+      if(e.settling&&e.go&&e.go.y-BALLS[e.lvl].r<OY){this._end();return;}
+    }
+  },
+  _end:function(){
+    if(this.over)return;
+    this.over=true;this.ok=false;
+    if(this.ct)this.ct.stop();
+    var self=this;
+    this.tweens.add({targets:this.cat,angle:12,duration:80,yoyo:true,repeat:5,onComplete:function(){self.cat.setAngle(0);}});
+    var fl=this.add.graphics().setDepth(50);fl.fillStyle(0xff1100,.35);fl.fillRect(0,0,GW,GH);
+    this.tweens.add({targets:fl,alpha:0,duration:600});
+    this.time.delayedCall(1000,function(){showModal(score);});
+  },
+  update:function(){
+    if(this.over)return;
+    this._processMerges();
+    var r=BALLS[this.dl].r;
+    var tx=Phaser.Math.Clamp(this.ptr.x,WALL+r+2,GW-WALL-r-2);
+    this.cat.x=Phaser.Math.Linear(this.cat.x,tx,.28);
+    if(this.di)this.di.x=this.cat.x;
+    this.guide.clear().lineStyle(1,0xffffff,.1).lineBetween(this.cat.x,DY+r*2,this.cat.x,GH-WALL);
+  }
+});
+
+function showModal(s){
+  fs=s;
+  document.getElementById("msc").textContent=s.toLocaleString();
+  document.getElementById("ov").classList.add("open");
+  document.getElementById("svs").style.display="";
+  document.getElementById("svm").style.display="none";
+  document.getElementById("pn").value="";
+  document.getElementById("svb").disabled=false;
+  document.getElementById("svb").textContent="Save";
+  renderLB();
+}
+document.getElementById("svb").addEventListener("click",async function(){
+  var name=document.getElementById("pn").value.trim();if(!name)return;
+  var btn=document.getElementById("svb");btn.disabled=true;btn.textContent="...";
+  var ok=await postScore(name,fs);
+  document.getElementById("svs").style.display="none";
+  document.getElementById("svm").style.display="";
+  if(ok)renderLB();
+});
+document.getElementById("pa").addEventListener("click",function(){
+  document.getElementById("ov").classList.remove("open");launch();
+});
+document.getElementById("shb").addEventListener("click",function(){
+  var url=window.location.origin;
+  var txt="I scored "+fs.toLocaleString()+" in Sports Drop Meow Merger! Beat me at "+url;
+  if(navigator.share)navigator.share({title:"Sports Drop",text:txt,url:url}).catch(function(){});
+  else window.open("https://twitter.com/intent/tweet?text="+encodeURIComponent(txt),"_blank");
+});
+
+// START BUTTON
+document.getElementById("start-btn").addEventListener("click",function(){
+  var ss=document.getElementById("ss");
+  ss.classList.add("out");
+  setTimeout(function(){ss.style.display="none";launch();},420);
+});
+
+function launch(){
+  if(pg){pg.destroy(true);pg=null;}
+  score=0;setScore(0);
+  pg=new Phaser.Game({
+    type:Phaser.CANVAS,
+    width:GW,height:GH,
+    transparent:true,
+    parent:"gc",
+    physics:{default:"matter",matter:{gravity:{y:2.2},debug:false}},
+    scene:GameScene,
+    scale:{mode:Phaser.Scale.FIT,autoCenter:Phaser.Scale.CENTER_BOTH}
+  });
+}
+
+// COOKIE
+(function(){
+  var b=document.getElementById("ck");
+  if(!localStorage.getItem("ck"))setTimeout(function(){b.classList.add("show");},1200);
+  document.getElementById("cka").onclick=function(){localStorage.setItem("ck","y");b.classList.remove("show");};
+  document.getElementById("ckd").onclick=function(){localStorage.setItem("ck","n");b.classList.remove("show");};
+})();
+
+loadCfg().catch(function(){}).finally(function(){renderLB();});
+</script>
+</body>
+</html>
